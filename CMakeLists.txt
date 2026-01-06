@@ -9,7 +9,7 @@ include_directories(
 )
 
 if(APPLE)
-    include_directories()
+    include_directories(/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/)
 elseif(UNIX AND NOT APPLE)
     include_directories(/usr/include/eigen3)
 else()
