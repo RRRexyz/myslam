@@ -18,7 +18,15 @@ Eigen::Matrix3d RotVec::to_rot_mat() {
 }
 
 RotVec rotmat_to_rotvec(Eigen::Matrix3d &R) {
-    Eigen::Vector3d axis{1.0, 0.0, 0.0};
-    double angle{0.0};
+    // A = R - I
+    Eigen::Matrix3d A = R - Eigen::Matrix3d::Identity();
+    // SVD of A, get full V
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(A, Eigen::ComputeFullV);
+    // the last col of V is the rotation axis
+    Eigen::Vector3d axis = svd.matrixV().col(2);
+
+    double trace = R.trace();
+    double angle = std::acos((trace - 1.0) / 2.0);
+
     return RotVec(axis, angle);
 }

@@ -48,3 +48,18 @@ TEST_CASE("RotVec") {
         CHECK(rotMat.isApprox(expected, 1e-8));
     }
 }
+
+TEST_CASE("rotmat_to_rotvec") {
+    Eigen::Matrix3d rotMat;
+    double angle = M_PI / 3; // 60 degrees
+    rotMat << std::cos(angle), -std::sin(angle), 0.0, std::sin(angle),
+        std::cos(angle), 0.0, 0.0, 0.0, 1.0;
+
+    RotVec rotVec = rotmat_to_rotvec(rotMat);
+
+    // Expected axis is z-axis
+    Eigen::Vector3d expected_axis = Eigen::Vector3d{0.0, 0.0, 1.0};
+
+    CHECK(rotVec.axis.isApprox(expected_axis, 1e-8));
+    CHECK(std::abs(rotVec.angle - angle) < 1e-8);
+}

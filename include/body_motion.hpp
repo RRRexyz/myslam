@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <Eigen/SVD>
 
 Eigen::Matrix3d skew_symmetric(Eigen::Vector3d &v);
 
