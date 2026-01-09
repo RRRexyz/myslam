@@ -30,3 +30,13 @@ RotVec rotmat_to_rotvec(Eigen::Matrix3d &R) {
 
     return RotVec(axis, angle);
 }
+
+Eigen::Matrix3d quaternion_to_rotmat(Eigen::Quaternionf &q) {
+    double s = q.w();
+    Eigen::Vector3d v(q.x(), q.y(), q.z());
+    auto I = Eigen::Matrix3d::Identity();
+    auto v_up = skew_symmetric(v);
+    Eigen::Matrix3d R =
+        v * v.transpose() + s * s * I + 2 * s * v_up + v_up * v_up;
+    return R;
+}

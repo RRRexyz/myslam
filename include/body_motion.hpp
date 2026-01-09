@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <Eigen/SVD>
+#include <Eigen/Geometry>
 
 Eigen::Matrix3d skew_symmetric(Eigen::Vector3d &v);
 
@@ -24,3 +25,4 @@ struct RotVec {
 };
 
 RotVec rotmat_to_rotvec(Eigen::Matrix3d &R);
+Eigen::Matrix3d quaternion_to_rotmat(Eigen::Quaternionf &q);
