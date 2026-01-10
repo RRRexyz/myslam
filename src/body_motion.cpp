@@ -40,3 +40,10 @@ Eigen::Matrix3d quaternion_to_rotmat(Eigen::Quaternionf &q) {
         v * v.transpose() + s * s * I + 2 * s * v_up + v_up * v_up;
     return R;
 }
+
+RotVec quaternion_to_rotvec(Eigen::Quaternionf &q) {
+    double angle = 2 * std::acos(q.w());
+    Eigen::Vector3d axis(q.x(), q.y(), q.z());
+    axis /= std::sin(angle / 2.0);
+    return RotVec(axis, angle);
+}

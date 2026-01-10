@@ -91,3 +91,28 @@ TEST_CASE("quaternion_to_rotmat") {
         CHECK(rotMat.isApprox(expected, 1e-6));
     }
 }
+
+TEST_CASE("quaternion_to_rotvec") {
+    SUBCASE("45 degrees around x-axis") {
+        Eigen::Quaternionf q1(0.9238795f, 0.3826834f, 0.0f,
+                              0.0f); // 45 degrees around x-axis
+        RotVec rotVec = quaternion_to_rotvec(q1);
+
+        Eigen::Vector3d expected_axis = Eigen::Vector3d{1.0, 0.0, 0.0};
+        double expected_angle = M_PI / 4; // 45 degrees
+
+        CHECK(rotVec.axis.isApprox(expected_axis, 1e-6));
+        CHECK(std::abs(rotVec.angle - expected_angle) < 1e-6);
+    }
+    SUBCASE("60 degrees around z-axis") {
+        Eigen::Quaternionf q2(0.8660254f, 0.0f, 0.0f,
+                             0.5000000f); // 60 degrees around z-axis
+        RotVec rotVec = quaternion_to_rotvec(q2);
+
+        Eigen::Vector3d expected_axis = Eigen::Vector3d{0.0, 0.0, 1.0};
+        double expected_angle = M_PI / 3; // 60 degrees
+
+        CHECK(rotVec.axis.isApprox(expected_axis, 1e-6));
+        CHECK(std::abs(rotVec.angle - expected_angle) < 1e-6);
+    }
+}
