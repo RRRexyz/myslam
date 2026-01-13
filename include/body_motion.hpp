@@ -25,6 +25,8 @@ struct RotVec {
 };
 
 RotVec rotmat_to_rotvec(Eigen::Matrix3d &R);
+Eigen::Quaterniond rotmat_to_quaternion(Eigen::Matrix3d &R);
+Eigen::Quaterniond rotvec_to_quaternion(RotVec &rot_vec);
 Eigen::Matrix3d quaternion_to_rotmat(Eigen::Quaternionf &q);
 RotVec quaternion_to_rotvec(Eigen::Quaternionf &q);
 Eigen::Vector3d so3_log(Eigen::Matrix3d &R);

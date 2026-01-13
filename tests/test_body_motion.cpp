@@ -186,3 +186,40 @@ TEST_CASE("se3_log") {
 
     CHECK(xi.isApprox(expected, 1e-8));
 }
+
+TEST_CASE("rotmat_to_quaternion") {
+    SUBCASE("trace > 0") {
+        Eigen::Matrix3d R;
+        double angle = M_PI / 4; // 45 degrees
+        R << std::cos(angle), -std::sin(angle), 0.0, std::sin(angle),
+            std::cos(angle), 0.0, 0.0, 0.0, 1.0;
+        Eigen::Quaterniond q = rotmat_to_quaternion(R);
+
+        Eigen::Quaterniond expected(R);
+
+        CHECK(q.isApprox(expected, 1e-8));
+    }
+    SUBCASE("trace <= 0") {
+        Eigen::Matrix3d R;
+        double angle = M_PI; // 180 degrees
+        R << std::cos(angle), -std::sin(angle), 0.0, std::sin(angle),
+            std::cos(angle), 0.0, 0.0, 0.0, 1.0;
+        Eigen::Quaterniond q = rotmat_to_quaternion(R);
+
+        Eigen::Quaterniond expected(R);
+
+        CHECK(q.isApprox(expected, 1e-8));
+    }
+}
+
+TEST_CASE("rotvec_to_quaternion") {
+    Eigen::Vector3d axis = Eigen::Vector3d{0.0, 0.0, 1.0};
+    double angle = M_PI / 3; // 60 degrees
+    RotVec rot_vec(axis, angle);
+    Eigen::Quaterniond q = rotvec_to_quaternion(rot_vec);
+
+    Eigen::AngleAxisd aa(angle, axis);
+    Eigen::Quaterniond expected(aa);
+
+    CHECK(q.isApprox(expected, 1e-8));
+}

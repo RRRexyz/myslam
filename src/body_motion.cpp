@@ -31,6 +31,51 @@ RotVec rotmat_to_rotvec(Eigen::Matrix3d &R) {
     return RotVec(axis, angle);
 }
 
+Eigen::Quaterniond rotmat_to_quaternion(Eigen::Matrix3d &R) {
+    Eigen::Quaterniond q;
+    double trace = R.trace();
+    if (trace > 0) {
+        double s = 2.0 * std::sqrt(trace + 1.0);
+        q.w() = 0.25 * s;
+        q.x() = (R(2, 1) - R(1, 2)) / s;
+        q.y() = (R(0, 2) - R(2, 0)) / s;
+        q.z() = (R(1, 0) - R(0, 1)) / s;
+    } else {
+        if (R(0, 0) > R(1, 1) && R(0, 0) > R(2, 2)) {
+            double s = 2.0 * std::sqrt(1.0 + R(0, 0) - R(1, 1) - R(2, 2));
+            q.w() = (R(2, 1) - R(1, 2)) / s;
+            q.x() = 0.25 * s;
+            q.y() = (R(0, 1) + R(1, 0)) / s;
+            q.z() = (R(0, 2) + R(2, 0)) / s;
+        } else if (R(1, 1) > R(2, 2)) {
+            double s = 2.0 * std::sqrt(1.0 + R(1, 1) - R(0, 0) - R(2, 2));
+            q.w() = (R(0, 2) - R(2, 0)) / s;
+            q.x() = (R(0, 1) + R(1, 0)) / s;
+            q.y() = 0.25 * s;
+            q.z() = (R(1, 2) + R(2, 1)) / s;
+        } else {
+            double s = 2.0 * std::sqrt(1.0 + R(2, 2) - R(0, 0) - R(1, 1));
+            q.w() = (R(1, 0) - R(0, 1)) / s;
+            q.x() = (R(0, 2) + R(2, 0)) / s;
+            q.y() = (R(1, 2) + R(2, 1)) / s;
+            q.z() = 0.25 * s;
+        }
+    }
+    return q.normalized();
+}
+
+Eigen::Quaterniond rotvec_to_quaternion(RotVec &rot_vec) {
+    double half_angle = rot_vec.angle / 2.0;
+    double sin_half = std::sin(half_angle);
+    Eigen::Quaterniond q;
+    q.w() = std::cos(half_angle);
+    q.x() = rot_vec.axis[0] * sin_half;
+    q.y() = rot_vec.axis[1] * sin_half;
+    q.z() = rot_vec.axis[2] * sin_half;
+    return q;
+
+}
+
 Eigen::Matrix3d quaternion_to_rotmat(Eigen::Quaternionf &q) {
     double s = q.w();
     Eigen::Vector3d v(q.x(), q.y(), q.z());
