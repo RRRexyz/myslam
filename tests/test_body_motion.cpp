@@ -1,6 +1,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "body_motion.hpp"
 #include "doctest.h"
+#include <sophus/se3.hpp>
+#include <sophus/so3.hpp>
 
 TEST_CASE("transfer to skew_symmetric matrix") {
     Eigen::Vector3d v = Eigen::Vector3d{1.0, 2.0, 3.0};
@@ -77,7 +79,6 @@ TEST_CASE("quaternion_to_rotmat") {
 
         CHECK(rotMat.isApprox(expected, 1e-6));
     }
-
     SUBCASE("60 degrees around z-axis") {
         Eigen::Quaternionf q2(0.8660254f, 0.0f, 0.0f,
                               0.5000000f); // 60 degrees around z-axis
@@ -106,7 +107,7 @@ TEST_CASE("quaternion_to_rotvec") {
     }
     SUBCASE("60 degrees around z-axis") {
         Eigen::Quaternionf q2(0.8660254f, 0.0f, 0.0f,
-                             0.5000000f); // 60 degrees around z-axis
+                              0.5000000f); // 60 degrees around z-axis
         RotVec rotVec = quaternion_to_rotvec(q2);
 
         Eigen::Vector3d expected_axis = Eigen::Vector3d{0.0, 0.0, 1.0};
@@ -115,4 +116,73 @@ TEST_CASE("quaternion_to_rotvec") {
         CHECK(rotVec.axis.isApprox(expected_axis, 1e-6));
         CHECK(std::abs(rotVec.angle - expected_angle) < 1e-6);
     }
+}
+
+TEST_CASE("so3_log") {
+    Eigen::Matrix3d rotMat;
+    double angle = M_PI / 4; // 45 degrees
+    rotMat << std::cos(angle), -std::sin(angle), 0.0, std::sin(angle),
+        std::cos(angle), 0.0, 0.0, 0.0, 1.0;
+    Eigen::Vector3d log_vec = so3_log(rotMat);
+
+    Sophus::SO3d sophus_rot(rotMat);
+    Eigen::Vector3d expected = sophus_rot.log();
+
+    CHECK(log_vec.isApprox(expected, 1e-8));
+}
+
+TEST_CASE("so3_exp") {
+    SUBCASE("when phi's norm is too small") {
+        Eigen::Vector3d phi = Eigen::Vector3d{1e-8, 1e-9, 1e-10};
+        Eigen::Matrix3d exp_mat = so3_exp(phi);
+
+        Eigen::Matrix3d expected = Eigen::Matrix3d::Identity();
+
+        CHECK(exp_mat.isApprox(expected, 1e-8));
+    }
+    SUBCASE("when phi's norm is normal") {
+        Eigen::Vector3d phi = Eigen::Vector3d{1.2, 2.3, 4.8};
+        Eigen::Matrix3d exp_mat = so3_exp(phi);
+
+        Sophus::SO3d sophus_rot = Sophus::SO3d::exp(phi);
+        Eigen::Matrix3d expected = sophus_rot.matrix();
+
+        CHECK(exp_mat.isApprox(expected, 1e-8));
+    }
+}
+
+TEST_CASE("se3_exp") {
+    SUBCASE("when phi's norm is too small") {
+        Eigen::Vector<double, 6> xi;
+        xi << 1.0, 2.0, 3.0, 1e-8, 1e-9, 1e-10;
+        Eigen::Matrix4d T = se3_exp(xi);
+
+        Sophus::SE3d sophus_T = Sophus::SE3d::exp(xi);
+        Eigen::Matrix4d expected = sophus_T.matrix();
+
+        CHECK(T.isApprox(expected, 1e-8));
+    }
+    SUBCASE("when phi's norm is normal") {
+        Eigen::Vector<double, 6> xi;
+        xi << 1.0, 2.0, 3.0, 0.5, -1.0, 2.0;
+        Eigen::Matrix4d T = se3_exp(xi);
+
+        Sophus::SE3d sophus_T = Sophus::SE3d::exp(xi);
+        Eigen::Matrix4d expected = sophus_T.matrix();
+
+        CHECK(T.isApprox(expected, 1e-8));
+    }
+}
+
+TEST_CASE("se3_log") {
+    Eigen::Matrix4d T;
+    double angle = M_PI / 6; // 30 degrees
+    T << std::cos(angle), -std::sin(angle), 0.0, 1.0, std::sin(angle),
+        std::cos(angle), 0.0, 2.0, 0.0, 0.0, 1.0, 3.0, 0.0, 0.0, 0.0, 1.0;
+    Eigen::Vector<double, 6> xi = se3_log(T);
+
+    Sophus::SE3d sophus_T(T);
+    Eigen::Vector<double, 6> expected = sophus_T.log();
+
+    CHECK(xi.isApprox(expected, 1e-8));
 }
