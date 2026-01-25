@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Sophus REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
